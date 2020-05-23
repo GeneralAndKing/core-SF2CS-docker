@@ -29,11 +29,11 @@ services:
     ports: 
       - 8500:8500
       - 8600:8600/udp
-  sf2cs-ui:
-    container_name: ui
-    build: ./ui
-    ports: 
-      - 80:80
+  # sf2cs-ui:
+  #   container_name: ui
+  #   build: ./ui
+  #   ports: 
+  #     - 80:80
   sf2cs-management:
     container_name: management
     build: ./management
