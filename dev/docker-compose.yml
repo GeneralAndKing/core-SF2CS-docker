@@ -1,25 +1,61 @@
 version: "2.2"
 services:
-    sf2cs-redis:
-      container_name: sf2cs-redis
-      image: redis:5
-      ports: 
-        - 6379:6379
-      volumes: 
-        # docker volumes mapping
-        - "${REDIS_DIR}/conf:/usr/local/etc/redis"
-        - "${REDIS_DIR}/data:/data"
-      command: 
-        redis-server
-      restart: always
-    sf2cs-mysql:
-      container_name: sf2cs-mysql
-      image: mysql:8
-      ports:
-        - 3306:3306
-      volumes:
-        - "${MYSQL_DIR}/data:/var/lib/mysql"
-        - "${MYSQL_DIR}/conf.d:/etc/mysql/conf.d"
-      environment:
-        # environment variables
-        - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+  sf2cs-redis:
+    container_name: redis
+    image: redis:5
+    ports: 
+      - 6379:6379
+    volumes: 
+      # docker volumes mapping
+      - "${REDIS_DIR}/conf:/usr/local/etc/redis"
+      - "${REDIS_DIR}/data:/data"
+    command: 
+      redis-server
+
+  sf2cs-mysql:
+    container_name: mysql
+    image: mysql:8
+    ports:
+      - 3306:3306
+    volumes:
+      - "${MYSQL_DIR}/data:/var/lib/mysql"
+      - "${MYSQL_DIR}/conf.d:/etc/mysql/conf.d"
+    environment:
+      # environment variables
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+  sf2cs-consul:
+    container_name: consul
+    image: consul:latest
+    ports: 
+      - 8500:8500
+      - 8600:8600/udp
+  sf2cs-management:
+    container_name: management
+    build: ./management
+    depends_on: 
+      - sf2cs-redis
+      - sf2cs-mysql
+      - sf2cs-consul
+  sf2cs-server:
+    container_name: server
+    build: ./server
+    depends_on: 
+      - sf2cs-redis
+      - sf2cs-mysql
+      - sf2cs-consul
+  sf2cs-auth:
+    container_name: auth
+    build: ./auth
+    depends_on: 
+      - sf2cs-redis
+      - sf2cs-mysql
+      - sf2cs-consul
+  sf2cs-gateway:
+    container_name: gateway
+    build: ./gateway
+    depends_on: 
+      - sf2cs-management
+      - sf2cs-server
+      - sf2cs-auth
+    ports: 
+      - 9999:9999
